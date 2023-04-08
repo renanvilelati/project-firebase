@@ -1,3 +1,5 @@
+import { db } from './firebaseConnection'
+
 import './App.css'
 
 export const App = () => {

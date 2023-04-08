@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { db } from './firebaseConnection'
-import { doc, setDoc, collection, addDoc } from 'firebase/firestore'
+import { doc, setDoc, collection, addDoc, getDoc } from 'firebase/firestore'
 
 import './App.css'
 
@@ -34,8 +34,23 @@ export const App = () => {
         setTitulo('')
       })
       .catch((error) => {
-        console.log('GEROU UM ERRO ' + error);
+        console.error('GEROU UM ERRO ' + error);
       })
+  }
+
+  async function buscarPost() {
+
+    const postRef = doc(db, 'posts', 'vMl0hg0TnlpNk1znCwS2')
+
+    await getDoc(postRef)
+      .then((snapshot) => {
+        setAutor(snapshot.data().author)
+        setTitulo(snapshot.data().title)
+      })
+      .catch((error) => {
+        console.error('ERRO AO BUSCAR');
+      })
+
   }
 
   return (
@@ -60,7 +75,7 @@ export const App = () => {
         />
 
         <button onClick={handleAdd}>Cadastrar</button>
-        {/* <button onClick={buscarPost}>Buscar post</button> */}
+        <button onClick={buscarPost}>Buscar post</button>
 
       </div>
 

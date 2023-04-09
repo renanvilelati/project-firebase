@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { db } from './firebaseConnection'
+import { db, auth } from './firebaseConnection'
 import {
   doc,
   setDoc,
@@ -13,6 +13,8 @@ import {
   onSnapshot
 } from 'firebase/firestore'
 
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+
 import { Trash } from 'phosphor-react'
 
 import './App.css'
@@ -22,6 +24,12 @@ export const App = () => {
   const [titulo, setTitulo] = useState('')
   const [autor, setAutor] = useState('')
   const [idPost, setIdPost] = useState('')
+
+  const [user, setUser] = useState(false)
+  const [userDetail, setUserDetail] = useState({})
+
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
 
   const [posts, setPosts] = useState([])
 
@@ -145,11 +153,80 @@ export const App = () => {
 
   }
 
+  async function novoUsuario() {
+    await createUserWithEmailAndPassword(auth, email, senha)
+      .then((value) => {
+        console.log('CADASTRADO COM SUCESSO');
+        console.log(value);
+        setEmail('')
+        setSenha('')
+      })
+      .catch((error) => {
+
+        if (error.code === 'auth/weak-password') {
+          alert('Senha muito fraca!')
+        } else if (error.code === 'auth/email-already-in-use') {
+          alert('Email já está sendo usado!')
+        }
+
+      })
+  }
+
+  async function logarUsuario() {
+    await signInWithEmailAndPassword(auth, email, senha)
+      .then(value => {
+        console.log('USUÁRIO LOGADO COM SUCESSO');
+        console.log(value.user);
+
+        setUserDetail({
+          uid: value.user.uid,
+          email: value.user.email
+        })
+
+        setUser(true)
+
+        setEmail('')
+        setSenha('')
+      })
+      .catch(error => {
+        console.log('ERRO AO FAZER O LOGIN');
+      })
+  }
+
   return (
     <div>
       <h1>ReactJS + Firebase 📝</h1>
 
+      {user && (
+        <div>
+          <strong>Seja bem-vindo(a)! Você está logado!</strong>
+          <p>ID: {userDetail.uid} - Email: {userDetail.email}</p>
+        </div>
+      )}
+
       <div className="container">
+        <h2>Usuários</h2>
+        <label>E-mail</label>
+        <input
+          type="text"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder='Digite seu email'
+        />
+        <input
+          type="text"
+          value={senha}
+          onChange={e => setSenha(e.target.value)}
+          placeholder='Digite sua senha'
+        />
+        <button onClick={logarUsuario}>Login</button>
+        <button onClick={novoUsuario}>Cadastrar</button>
+      </div>
+
+      <hr />
+
+      <div className="container">
+        <h2>Posts</h2>
 
         <label>Buscar post</label>
         <input

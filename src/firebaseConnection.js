@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { getAuth } from 'firebase/auth'
 
 // Configuração pega no site do firebase para cada app
 const firebaseConfig = {
@@ -17,3 +18,5 @@ const firebaseApp = initializeApp(firebaseConfig)
 // Recuperando o banco firestore
 export const db = getFirestore(firebaseApp)
 
+// Fazer autenticação
+export const auth = getAuth(firebaseApp)

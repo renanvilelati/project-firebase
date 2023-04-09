@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
 import { db } from './firebaseConnection'
-import { doc, setDoc, collection, addDoc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
+import { doc, setDoc, collection, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
+
+import { Trash } from 'phosphor-react'
 
 import './App.css'
 
@@ -97,13 +99,23 @@ export const App = () => {
 
   }
 
+  async function excluirPost(id) {
+    const docRef = doc(db, 'posts', id)
+
+    await deleteDoc(docRef)
+      .then(() => {
+        console.log('POST DELETADO COM SUCESSO!');
+      })
+
+  }
+
   return (
     <div>
       <h1>ReactJS + Firebase 📝</h1>
 
       <div className="container">
 
-        <label>ID do post</label>
+        <label>Buscar post</label>
         <input
           type="text"
           value={idPost}
@@ -148,6 +160,9 @@ export const App = () => {
                     <td>{post.id} </td>
                     <td> {post.titulo} </td>
                     <td> {post.autor} </td>
+                    <td><button
+                      className='delete-button'
+                      onClick={() => excluirPost(post.id)}><Trash size={24} /> Excluir </button></td>
                   </tr>
                 )
               })

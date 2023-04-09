@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { db } from './firebaseConnection'
-import { doc, setDoc, collection, addDoc, getDoc, getDocs } from 'firebase/firestore'
+import { doc, setDoc, collection, addDoc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
 
 import './App.css'
 
@@ -9,6 +9,8 @@ export const App = () => {
 
   const [titulo, setTitulo] = useState('')
   const [autor, setAutor] = useState('')
+  const [idPost, setIdPost] = useState('')
+
   const [posts, setPosts] = useState([])
 
   async function handleAdd() {
@@ -75,20 +77,49 @@ export const App = () => {
 
   }
 
+  async function editarPost() {
+
+    const docRef = doc(db, 'posts', idPost)
+
+    await updateDoc(docRef, {
+      title: titulo,
+      author: autor
+    })
+      .then(() => {
+        console.log('POST ATUALIZADO');
+        setAutor('')
+        setTitulo('')
+        setIdPost('')
+      })
+      .catch(error => {
+        console.error(`ERRO AO ATUALIZAR O POST! Erro: ${error}`);
+      })
+
+  }
+
   return (
     <div>
-      <h1>ReactJS + Firebase :)</h1>
+      <h1>ReactJS + Firebase 📝</h1>
 
       <div className="container">
-        <label>Titulo:</label>
-        <textarea
+
+        <label>ID do post</label>
+        <input
           type="text"
-          placeholder='Digite o titulo'
+          value={idPost}
+          placeholder='Digite o ID do post'
+          onChange={e => setIdPost(e.target.value)}
+        />
+
+        <label>Titulo</label>
+        <input
+          type="text"
+          placeholder='Digite o título'
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
 
-        <label>Autor:</label>
+        <label>Autor</label>
         <input
           type="text"
           placeholder="Autor do post"
@@ -98,19 +129,33 @@ export const App = () => {
 
         <button onClick={handleAdd}>Cadastrar</button>
         <button onClick={buscarPost}>Buscar post</button>
+        <button onClick={editarPost}>Atualizar post</button>
 
-        <ul>
-          {
-            posts.map(post => {
-              return (
-                <li key={post.id}>
-                  <span>Título: {post.titulo}</span> <br />
-                  <span>Autor: {post.autor}</span> <br />
-                </li>
-              )
-            })
-          }
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Título</th>
+              <th>Autor</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {
+              posts.map(post => {
+                return (
+                  <tr key={post.id}>
+                    <td>{post.id} </td>
+                    <td> {post.titulo} </td>
+                    <td> {post.autor} </td>
+                  </tr>
+                )
+              })
+            }
+
+          </tbody>
+        </table>
+
 
       </div>
 

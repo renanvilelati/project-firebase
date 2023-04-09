@@ -1,7 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { db } from './firebaseConnection'
-import { doc, setDoc, collection, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  collection,
+  addDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  onSnapshot
+} from 'firebase/firestore'
 
 import { Trash } from 'phosphor-react'
 
@@ -14,6 +24,32 @@ export const App = () => {
   const [idPost, setIdPost] = useState('')
 
   const [posts, setPosts] = useState([])
+
+  useEffect(() => {
+
+    async function loadPosts() {
+      const unsub = onSnapshot(collection(db, 'posts'), (snapshot) => {
+        let listaPost = []
+
+        snapshot.forEach(doc => {
+          listaPost.push({
+            id: doc.id,
+            titulo: doc.data().title,
+            autor: doc.data().author,
+          })
+        })
+
+        setPosts(listaPost)
+
+      })
+        .catch((error) => {
+          console.log('DEU ERRO: ' + error);
+        })
+    }
+
+    loadPosts()
+
+  }, [])
 
   async function handleAdd() {
     // Usando o setDoc é preciso informar qual o ID do documento

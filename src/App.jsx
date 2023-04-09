@@ -13,7 +13,12 @@ import {
   onSnapshot
 } from 'firebase/firestore'
 
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import {
+  signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from 'firebase/auth'
 
 import { Trash } from 'phosphor-react'
 
@@ -24,6 +29,8 @@ export const App = () => {
   const [titulo, setTitulo] = useState('')
   const [autor, setAutor] = useState('')
   const [idPost, setIdPost] = useState('')
+
+  const [invalidLogin, setInvalidLogin] = useState(false)
 
   const [user, setUser] = useState(false)
   const [userDetail, setUserDetail] = useState({})
@@ -56,6 +63,29 @@ export const App = () => {
     }
 
     loadPosts()
+
+  }, [])
+
+  useEffect(() => {
+    async function checkLogin() {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // Tem usuário logado
+          setUser(user)
+          setUserDetail({
+            uid: user.uid,
+            email: user.email
+          })
+        } else {
+          // Não possui usuário logado
+          setUser('')
+          setUserDetail({})
+        }
+      })
+
+    }
+
+    checkLogin()
 
   }, [])
 
@@ -184,25 +214,43 @@ export const App = () => {
         })
 
         setUser(true)
-
+        setInvalidLogin(false)
         setEmail('')
         setSenha('')
       })
       .catch(error => {
+        setInvalidLogin(true)
         console.log('ERRO AO FAZER O LOGIN');
       })
+  }
+
+  async function fazerLogout() {
+    await signOut(auth)
+    setUser(false)
+    setUserDetail({})
   }
 
   return (
     <div>
       <h1>ReactJS + Firebase 📝</h1>
 
-      {user && (
-        <div>
-          <strong>Seja bem-vindo(a)! Você está logado!</strong>
-          <p>ID: {userDetail.uid} - Email: {userDetail.email}</p>
-        </div>
-      )}
+      {
+        invalidLogin && (
+          <div>
+            <strong className='invalid-login'>Usuário ou senha inválida! 🙊</strong>
+          </div>
+        )
+      }
+
+      {
+        user && (
+          <div>
+            <strong>Seja bem-vindo(a)! Você está logado!</strong>
+            <p>ID: {userDetail.uid} - Email: {userDetail.email}</p>
+            <button onClick={fazerLogout}>Sair da conta</button>
+          </div>
+        )
+      }
 
       <div className="container">
         <h2>Usuários</h2>
